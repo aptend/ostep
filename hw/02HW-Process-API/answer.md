@@ -33,3 +33,8 @@
    超纲了呀  
    - `dup(int oldfd)` 占用一个没有使用整数，指向`oldfd`所指向的文件表项
    - `dup2(int oldfd, int newfd)` 占用`newfd`，指向`oldfd`所指向的文件表项，如果`newfd`已经使用，会先关闭
+
+
+---
+
+真的不是很喜欢这种类型的习题，范围怪怪的

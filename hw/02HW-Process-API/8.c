@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
 
@@ -8,20 +9,20 @@ int main(int argc, char *argv[])
 
     pipe(pipefd);
 
+    fprintf(stderr, "[e] create producer\n");
     if (0 == fork()) // child 1, producer
     {
-        // printf("hello\n");
         close(pipefd[0]);               // close read end
-        if (dup2(pipefd[1], STDOUT_FILENO) < 0) {
-            printf("bad");
-        } // chars to stdout are redirected to pipefd[1]
+        dup2(pipefd[1], STDOUT_FILENO); // chars to stdout are redirected to pipefd[1]
 
         // call producer program;
-        printf("hello\n");
+        printf("[child 1] hello\n");
         printf("[child 1] sleep 2 seconds to pretend working hard\n");
+        exit(0); // OS will close fd
     }
 
-    if (0 == fork()) // child 1, producer
+    fprintf(stderr, "[e] create consumer\n");
+    if (0 == fork()) // child 2, consumer
     {
         close(pipefd[1]);              // close write end
         dup2(pipefd[0], STDIN_FILENO); // read request to stdin will be redirected to pipefd[0]
@@ -32,7 +33,12 @@ int main(int argc, char *argv[])
         {
             printf("[child2 received] %s", buf);
         }
+        exit(0); // OS will close fd
     }
+
+    close(pipefd[0]);
+    close(pipefd[1]);
+    fprintf(stderr, "[e] main thread waits\n");
 
     while (wait(NULL) > 0)
         ;
