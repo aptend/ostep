@@ -1,5 +1,5 @@
 
-## 时间戳计时
+## 系统调用的时间测量
 
 ref:
 
@@ -15,38 +15,64 @@ ref:
 
 这里还是用`rdtsc`来测量，结果如下
 ```
-1000000 times read: 3318511864
-1000000 times read: 3276549532
-1000000 times read: 3270953560
-1000000 times read: 3277160878
-1000000 times read: 3256661022
-1000000 times read: 3268336348
-1000000 times read: 3295690668
-1000000 times read: 3274807988
-1000000 times read: 3267876860
-1000000 times read: 3261003352
+$ ./a.out
+1000000 times read cost: 2282567837
+1000000 times read cost: 2278176314
+1000000 times read cost: 2325685633
+1000000 times read cost: 2273940101
+1000000 times read cost: 2269210048
+1000000 times read cost: 2301289353
+1000000 times read cost: 2352414939
+1000000 times read cost: 2518596276
+1000000 times read cost: 2359600308
+1000000 times read cost: 2419201691
+average: 2338068250
 ```
 ```
-$ cat /proc/cpuinfo
+$ cat /proc/cpuinfo 
 processor       : 0
 vendor_id       : GenuineIntel
 cpu family      : 6
-model           : 60
-model name      : Intel(R) Core(TM) i3-4160 CPU @ 3.60GHz
-stepping        : 3
+model           : 142
+model name      : Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz
+stepping        : 10
 microcode       : 0xffffffff
-cpu MHz         : 3600.000
+cpu MHz         : 2001.000
 cache size      : 256 KB
 physical id     : 0
-siblings        : 4
+siblings        : 8
 core id         : 0
-cpu cores       : 2
+cpu cores       : 4
 apicid          : 0
 initial apicid  : 0
 fpu             : yes
 fpu_exception   : yes
 cpuid level     : 6
-wp              : yes
+wp              : yess
 ```
 
-所以 `3256661022 / 10^6 / 3600 x 10 ^ 6 * 10^6 ms = 0.9ms`
+所以 `(2338068250 / 2001 x 10^6)s / 10^6 = 1168ns`
+
+
+使用`clock_gettime`也得到了相似的结果, 单位ns，结果是`1147333720 / 10^6 = 1147ns`
+
+```
+$ ./a.out
+1000000 times read cost: 1143889000
+1000000 times read cost: 1147410300
+1000000 times read cost: 1160507300
+1000000 times read cost: 1144955400
+1000000 times read cost: 1148255500
+1000000 times read cost: 1144968800
+1000000 times read cost: 1143389500
+1000000 times read cost: 1148820800
+1000000 times read cost: 1148736700
+1000000 times read cost: 1142403900
+average: 1147333720
+```
+
+
+>  如果把read(fd, NULL, 0); 换成标准输入read(0, NULL, 0) 时间会增加到1500左右，为什么呢？
+
+
+## 上下文切换的时间测量

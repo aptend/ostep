@@ -1,6 +1,6 @@
 
 #include <linux/types.h>
-#include <sys/time.h>
+#include <time.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -17,23 +17,30 @@ __u64 rdtsc()
 
 __u64 pref()
 {
-    clo_g
+    struct timespec spec;
+    clock_gettime(CLOCK_REALTIME, &spec);
+    // return result in nano seconds.
+    return spec.tv_sec * 1000000000 + spec.tv_nsec;
 }
 
 int main()
 {
-    int fd = open("sample", O_RDONLY);
     int i, round;
-    read(fd, NULL, 0);
+    int fd = open("sample", O_RDONLY);
+    __u64 total = 0;
     for (round = 0; round < 10; round++)
     {
-        __u64 start = rdtsc();
+        __u64 start = pref();
         for (i = 0; i < TIMES; i++)
         {
             read(fd, NULL, 0);
         }
-        __u64 end = rdtsc();
+        __u64 end = pref();
 
-        printf("%d times read: %llu\n", TIMES, end - start);
+        __u64 delta = end - start;
+        total += delta;
+        printf("%d times read cost: %llu\n", TIMES, delta);
     }
+    printf("average: %llu\n", total / 10);
+
 }
