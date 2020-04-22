@@ -1,4 +1,5 @@
 
+#define _GNU_SOURCE
 #include <linux/types.h>
 #include <time.h>
 #include <stdio.h>
