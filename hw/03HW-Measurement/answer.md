@@ -78,15 +78,50 @@ average: 1147333720
 
 ## 上下文切换的时间测量
 
-用提示的双管道的方法进行
+！！！这题不会
 
-> 如果两组write/read真的完全乱序进行，那么一轮4次系统调用固定，但是上下文切换完全可以达到三次啊，这怎么算？
+用提示的双管道的方法进行，两个进程的读写顺序很重要，比如执行两轮，**并且假设，只有在没有东西可读时才会发生上下文的切换**
+
+PA先写后读，PB先读后写，这种模式有4次上下文的切换，4次read，4次write，如果PB先运行，切换还要再多一次
+PA|PB
+--|--
+write| -
+read-stop| -
+- | read
+- | write
+- | read-stop
+read-cont | -
+write | -
+read-stop | -
+- | read-cont
+- | write - exit()
+read-cont exit() | -
 
 
-10^6轮，平均每轮4474ns，4.4微秒，如果减去之前的系统调用测量，上下文切换都没剩下了呀？不懂
+
+如果PA、PB都是先写后读，4次read，4次write，3次切换
+
+PA|PB
+--|--
+write| -
+read-stop| -
+- | write
+- | read
+- | write
+- | read-stop
+read-cont | -
+write | -
+read - exit() | -
+- | read-cont - exit()
+
+> 如果两组write/read真的完全乱序进行，我就是更分不清楚了
+
+> WSL的`sched_setaffinity`根本没有实际效果，top -p pida,pidb 按f选中P后，使用的核数始终是0
+
+~~10^6轮，平均每轮4474ns，4.4微秒，如果减去之前的系统调用测量，上下文切换都没剩下了呀？不懂~~
 
 
-lmbench的结果如下，4~5微妙
+lmbench的结果如下，4~5微妙，所以这个到底是怎么估计的，减去write、read的测量?
 ```txt
 Context switching - times in microseconds - smaller is better
 -------------------------------------------------------------------------
