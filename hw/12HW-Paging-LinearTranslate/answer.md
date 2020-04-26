@@ -41,3 +41,9 @@ limits of where the program doesn’t work anymore? For example,
 what happens if the address-space size is bigger than physical memory?
 
 ---
+
+1. 页大小1K不变，低10位一直是offset，随着虚拟地址空间的增加，多出来的高位都会当作VPN，所以页表的大小会增加，表项由1K -> 2K -> 4K; 相反虚拟地址空间不变，页容量变大，表项会减少，1K -> 512 -> 256。页容量不要太大，因为会产生较多的内部碎片
+2. u0，最多0%的地址进入主存；u25, 最多50%的地址进入主存; u50~100, 最多100%的地址进入主存
+3. 1m的page太大了？
+4. `Error: physical memory size must be GREATER than address space size (for this simulation)`  
+   `Error in argument: page size must be a power of 2`
