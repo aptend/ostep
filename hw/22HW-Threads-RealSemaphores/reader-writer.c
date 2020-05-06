@@ -25,6 +25,7 @@ void rwlock_acquire_readlock(rwlock_t *rw)
 {
     Sem_wait(&rw->mutex);
     rw->reader++;
+    // printf("enter reader: %d\n", rw->reader);
     if (rw->reader == 1) {
         Sem_wait(&rw->writer_lock);
     }
@@ -35,6 +36,7 @@ void rwlock_release_readlock(rwlock_t *rw)
 {
     Sem_wait(&rw->mutex);
     rw->reader--;
+    // printf("quit reader: %d\n", rw->reader);
     if (rw->reader == 0)
     {
         Sem_post(&rw->writer_lock);
@@ -64,11 +66,12 @@ rwlock_t lock;
 void *reader(void *arg)
 {
     int i;
+    usleep(*(int *)arg * 100 * 1000);
     for (i = 0; i < loops; i++)
     {
-        sleep(1);
         rwlock_acquire_readlock(&lock);
         printf("read %d\n", value);
+        usleep(300 * 1000);
         rwlock_release_readlock(&lock);
     }
     return NULL;
@@ -77,12 +80,12 @@ void *reader(void *arg)
 void *writer(void *arg)
 {
     int i;
+    usleep(200 * 1000);
     for (i = 0; i < loops; i++)
     {
         rwlock_acquire_writelock(&lock);
         value++;
         printf("write %d\n", value);
-        sleep(1);
         rwlock_release_writelock(&lock);
     }
     return NULL;
@@ -96,16 +99,20 @@ int main(int argc, char *argv[])
     loops = atoi(argv[3]);
 
     pthread_t pr[num_readers], pw[num_writers];
-
+    int rargs[num_readers], wargs[num_writers];
     rwlock_init(&lock);
 
     printf("begin\n");
 
     int i;
-    for (i = 0; i < num_readers; i++)
-        Pthread_create(&pr[i], NULL, reader, NULL);
-    for (i = 0; i < num_writers; i++)
-        Pthread_create(&pw[i], NULL, writer, NULL);
+    for (i = 0; i < num_readers; i++){
+        rargs[i] = i;
+        Pthread_create(&pr[i], NULL, reader, &rargs[i]);
+    }
+    for (i = 0; i < num_writers; i++){
+        wargs[i] = i;
+        Pthread_create(&pw[i], NULL, writer, &wargs[i]);
+    }
 
     for (i = 0; i < num_readers; i++)
         Pthread_join(pr[i], NULL);

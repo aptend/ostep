@@ -1,6 +1,6 @@
 #ifndef __MYTHREADS_h__
 #define __MYTHREADS_h__
-
+#define _GNU_SOURCE
 #include <pthread.h>
 #include <semaphore.h>
 #include <assert.h>

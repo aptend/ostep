@@ -10,73 +10,91 @@
 // when attempting to acquire this mutex you build?
 //
 
-
-typedef struct __ns_mutex_t {
+typedef struct __ns_mutex_t
+{
     sem_t mutex;
-    sem_t check_turn;
-    int token;
-    int turn;
+    int room1;
+    int room2;
+    sem_t t1;
+    sem_t t2;
 } ns_mutex_t;
 
-void ns_mutex_init(ns_mutex_t *m) {
+void ns_mutex_init(ns_mutex_t *m)
+{
     Sem_init(&m->mutex, 0, 1);
-    Sem_init(&m->check_turn, 0, 0);
-    m->token = 0;
-    m->turn = 0;
+    Sem_init(&m->t1, 0, 1);
+    Sem_init(&m->t2, 0, 0);
+    m->room1 = 0;
+    m->room2 = 0;
 }
 
-void ns_mutex_acquire(ns_mutex_t *m) {
+void ns_mutex_acquire(ns_mutex_t *m)
+{
     Sem_wait(&m->mutex);
-    int local_token = m->token;
-    printf("get token %d\n", local_token);
-    m->token++;
-    while (local_token != m->turn) {
-        printf("%d:%d\n not my turn, sleep", local_token, m->turn);
-        Sem_wait(&m->check_turn);
-        if (local_token != m->turn)
-            Sem_post(&m->check_turn);
+    m->room1++;
+    Sem_post(&m->mutex);
+
+    Sem_wait(&m->t1);
+    m->room2++;
+
+    Sem_wait(&m->mutex);
+    m->room1--;
+    if (m->room1 == 0)
+    {
+        Sem_post(&m->t2);
     }
-    printf("execute at turn %d\n", m->turn);
+    else
+    {
+        Sem_post(&m->t1);
+    }
     Sem_post(&m->mutex);
+
+    Sem_wait(&m->t2);
+    m->room2--;
 }
 
-
-
-void ns_mutex_release(ns_mutex_t *m) {
-    Sem_wait(&m->mutex);
-    printf("finish at turn %d\n", m->turn);
-    m->turn++;
-    Sem_post(&m->check_turn);
-    Sem_post(&m->mutex);
+void ns_mutex_release(ns_mutex_t *m)
+{
+    if (m->room2 == 0)
+    {
+        Sem_post(&m->t1);
+    }
+    else
+    {
+        Sem_post(&m->t2);
+    }
 }
 
 ns_mutex_t m;
+int counter = 0;
 
-void *worker(void *arg) {
+void *worker(void *arg)
+{
     int thread_id = *(int *)arg;
-    printf("thread %d ", thread_id);
+    printf("thread%d is working\n", thread_id);
     ns_mutex_acquire(&m);
-    sleep(0.2);
+    counter++;
     ns_mutex_release(&m);
     return NULL;
 }
 
-
-
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
+    assert(argc == 2);
+    int N = atoi(argv[1]);
     printf("parent: begin\n");
     ns_mutex_init(&m);
-    int N = 10;
+    int args[N];
     int i;
     pthread_t threads[N];
-    for (i = 0; i < N; i++){
-        int *arg = Malloc(sizeof(int));
-        *arg = i;
-        Pthread_create(&threads[i], NULL, worker, arg);
+    for (i = 0; i < N; i++)
+    {
+        args[i] = i;
+        Pthread_create(&threads[i], NULL, worker, &args[i]);
     }
     for (i = 0; i < N; i++)
         Pthread_join(threads[i], NULL);
+    printf("counter %d\n", counter);
     printf("parent: end\n");
     return 0;
 }
-
