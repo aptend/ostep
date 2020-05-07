@@ -13,4 +13,6 @@ int fstatat(int dirfd, const char *pathname, struct stat *statbuf, int flags);
 // 通用的接口，可以用AT_* flags达成上面三个调用的效果
 ```
 
-`link count`就是当前inode的引用数量，和目录中的entry数量无关
+~~目录的`link count`就是当前inode的引用数量，和目录中的entry数量无关~~
+
+目录的link_count就是其中目录的数量(包含.和..), 之前不变是WSL的行为，可能没处理好
