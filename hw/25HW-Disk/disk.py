@@ -72,8 +72,8 @@ class Disk:
         else:
             self.fairWindow = -1
 
-        print 'REQUESTS', self.requests
-        print ''
+        # print 'REQUESTS', self.requests
+        # print ''
 
         # for late requests
         self.lateCount = 0
@@ -81,11 +81,11 @@ class Disk:
             print 'LATE REQUESTS', self.lateRequests
             print ''
 
-        if self.compute == False:
-            print ''
-            print 'For the requests above, compute the seek, rotate, and transfer times.'
-            print 'Use -c or the graphical mode (-G) to see the answers.'
-            print ''
+        # if self.compute == False:
+        #     print ''
+        #     print 'For the requests above, compute the seek, rotate, and transfer times.'
+        #     print 'Use -c or the graphical mode (-G) to see the answers.'
+        #     print ''
 
         # BINDINGS
         if self.graphics:
@@ -234,7 +234,7 @@ class Disk:
 
     # call this to start simulation
     def Go(self):
-        if options.graphics:
+        if self.graphics:
             self.root.mainloop()
         else:
             self.GetNextIO()

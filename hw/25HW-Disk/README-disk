@@ -56,7 +56,7 @@ sectors. Thus, to read sector 10, the transfer begins halfway between 9 and 10,
 and ends halfway between 10 and 11.  Finally, in the default disk, there are
 12 sectors per track, meaning that each sector takes up 30 degrees of the
 rotational space. Thus, to read a sector, it takes 30 time units (given our
-default speed of rotation).
+default speed of rotationS.
 
 With this information in hand, you now should be able to compute the seek,
 rotation, and transfer times for accessing sector 10. Because the head starts
